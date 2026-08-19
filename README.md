@@ -25,6 +25,9 @@ Create your local environment file:
 cp .env.example .env
 ```
 
+Replace `JWT_SECRET` in `.env` with a private random value of at least 32
+characters. One way to generate one is `openssl rand -base64 48`.
+
 Start PostgreSQL:
 
 ```bash
@@ -35,6 +38,9 @@ Run the backend:
 
 ```bash
 cd backend
+set -a
+source ../.env
+set +a
 SPRING_PROFILES_ACTIVE=local ./mvnw spring-boot:run
 ```
 
@@ -61,8 +67,13 @@ cd backend
 Tests use a disposable Testcontainers PostgreSQL instance and do not modify the
 local development database.
 
+## Authentication API
+
+The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
+[`docs/API.md`](docs/API.md) for requests, responses, and error contracts.
+
 ## Current status
 
-Milestone 2 establishes the core PostgreSQL schema, Flyway migrations, JPA
-entities, repositories, and isolated persistence tests. Business functionality
-will be added incrementally according to `PROJECT_CONTEXT.md`.
+Milestone 3 adds validated authentication DTOs, BCrypt password hashing, signed
+JWT access tokens, current-user lookup, and backend-enforced customer/admin role
+authorization. Product and cart APIs will be added in subsequent milestones.
