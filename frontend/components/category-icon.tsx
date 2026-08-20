@@ -1,0 +1,8 @@
+import type { ProductCategory } from "@/lib/catalog";
+
+export function CategoryIcon({ category }: { category: ProductCategory }) {
+  if (category === "RESORT_ACCESS") return <svg className="category-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M13 39h38l-4-12a6 6 0 0 0-5.7-4H22.7a6 6 0 0 0-5.7 4l-4 12Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2.5" /><path d="M10 39h44v11H10V39Zm7 11v5m30-5v5M18 45h4m20 0h4M22 33h20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" /></svg>;
+  if (category === "LIFT_TICKET") return <svg className="category-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="m8 18 48 11M22 21l-5 22m29-17-5 22M15 36h29v9H15v-9Zm5 9v5m19-5v5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" /><circle cx="22" cy="31" r="3" fill="currentColor" /><circle cx="40" cy="34" r="3" fill="currentColor" /></svg>;
+  if (category === "LESSON") return <svg className="category-icon" viewBox="0 0 64 64" aria-hidden="true"><circle cx="31" cy="13" r="5" fill="none" stroke="currentColor" strokeWidth="2.5" /><path d="m29 20-7 12 9 7 7-11m-11 2 13 8m-23 9 11-8m4 0 12 8M8 53h48" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" /></svg>;
+  return <svg className="category-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="m20 9 8 8-7 33m23-41-8 8 7 33M13 53h13m12 0h13M24 32h16" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" /><path d="M24 28h16v9H24z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2.5" /></svg>;
+}

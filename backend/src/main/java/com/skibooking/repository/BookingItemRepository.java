@@ -24,5 +24,19 @@ public interface BookingItemRepository extends JpaRepository<BookingItem, Long> 
     long countReservedQuantity(
             @Param("category") ProductCategory category,
             @Param("statuses") Collection<BookingStatus> statuses);
-}
 
+    @Query("""
+            select item
+            from BookingItem item
+            join fetch item.booking booking
+            join fetch booking.user
+            join fetch item.product
+            left join fetch item.lessonSession
+            where item.category = :category
+              and booking.status in :statuses
+            order by booking.createdAt desc, item.id asc
+            """)
+    List<BookingItem> findAdminReservations(
+            @Param("category") ProductCategory category,
+            @Param("statuses") Collection<BookingStatus> statuses);
+}

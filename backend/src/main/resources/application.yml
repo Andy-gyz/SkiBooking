@@ -22,6 +22,9 @@ management:
                 include: health,info
 
 app:
+    local-admin:
+        email: ${LOCAL_ADMIN_EMAIL:}
+        password: ${LOCAL_ADMIN_PASSWORD:}
     stripe:
         api-key: ${STRIPE_SECRET_KEY:}
         webhook-secret: ${STRIPE_WEBHOOK_SECRET:}

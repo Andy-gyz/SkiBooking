@@ -58,6 +58,11 @@ Copy the printed `whsec_...` value into `STRIPE_WEBHOOK_SECRET`, then restart th
 backend so it reads the new environment value. The `STRIPE_PUBLISHABLE_KEY` is
 reserved for the future frontend; the backend never exposes the secret key.
 
+To create a local-only administrator, set `LOCAL_ADMIN_EMAIL` and a private
+`LOCAL_ADMIN_PASSWORD` of at least eight characters in `.env`, then restart the
+backend with the `local` profile. The account is created only when both values
+are configured. An existing customer account is never automatically promoted.
+
 The `local` profile loads fictional development seed data. Omit the profile to
 run with the core schema only.
 
@@ -70,6 +75,20 @@ npm run dev
 
 The frontend runs at `http://localhost:3000` and the backend runs at
 `http://localhost:8080`.
+
+The customer frontend currently provides these public routes:
+
+```text
+/
+/resort-entry
+/lift-tickets
+/lessons
+/rentals
+```
+
+The category pages render current product and price data from the backend. Set
+`NEXT_PUBLIC_API_BASE_URL` in `frontend/.env.local` only when the API is not
+available at the default `http://localhost:8080` address.
 
 Run backend tests (Docker Desktop must be running):
 
@@ -88,7 +107,9 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 7 adds Stripe sandbox payments using one idempotent PaymentIntent per
-booking. Only signed Stripe webhooks or a server-side Stripe status lookup can
-confirm an order. Failed card attempts remain retryable, successful payments are
-idempotent, and cancelled PaymentIntents release reserved lesson capacity once.
+Milestone 9 replaces the default Next.js screen with the responsive Snow Alpine
+Resort customer experience. It includes the shared header and footer, branded
+home page, four public category routes, loading and unavailable states, and
+server-rendered catalog integration with the Spring Boot API. Product
+configuration, cart, authentication, checkout, and admin screens are the next
+frontend slices.

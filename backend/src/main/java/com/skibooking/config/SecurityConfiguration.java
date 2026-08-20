@@ -33,7 +33,7 @@ import com.skibooking.web.ApiAccessDeniedHandler;
 import com.skibooking.web.ApiAuthenticationEntryPoint;
 
 @Configuration
-@EnableConfigurationProperties(SecurityProperties.class)
+@EnableConfigurationProperties({SecurityProperties.class, LocalAdminProperties.class})
 public class SecurityConfiguration {
 
     @Bean

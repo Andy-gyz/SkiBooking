@@ -392,3 +392,94 @@ releases its lesson capacity exactly once. Duplicate webhook delivery is safe.
 
 Payment errors include `PAYMENT_NOT_FOUND`, `INVALID_PAYMENT`,
 `INVALID_STRIPE_WEBHOOK`, and `STRIPE_UNAVAILABLE`.
+
+## Administration
+
+Every `/api/admin/**` endpoint requires a Bearer JWT with role `ADMIN`. A valid
+customer token returns `403 FORBIDDEN`; authentication is enforced by the backend
+and does not depend on hiding frontend routes.
+
+### Dashboard and reservations
+
+```http
+GET /api/admin/dashboard
+GET /api/admin/bookings?category=RESORT_ACCESS
+GET /api/admin/bookings?category=LIFT_TICKET
+GET /api/admin/bookings?category=LESSON
+GET /api/admin/bookings?category=RENTAL
+GET /api/admin/bookings/{id}
+```
+
+Dashboard counts sum purchased quantities from booking items whose booking is
+`CONFIRMED` or `COMPLETED`. `PENDING` and `CANCELLED` bookings are excluded. The
+response shape is:
+
+```json
+{
+  "resortAccessReservations": 126,
+  "liftTicketReservations": 94,
+  "lessonReservations": 37,
+  "rentalReservations": 68
+}
+```
+
+The category list returns one row per matching booking item, newest booking
+first. Each row includes booking status, customer snapshot, latest payment
+status, product snapshot, and all category-specific selections. Booking detail
+returns every item and payment attempt for the requested internal booking ID.
+
+### Product management
+
+```http
+GET    /api/admin/products
+GET    /api/admin/products?category=LESSON
+POST   /api/admin/products
+PUT    /api/admin/products/{id}
+DELETE /api/admin/products/{id}
+```
+
+Create and update bodies use:
+
+```json
+{
+  "resortId": 1,
+  "name": "Child Lift Pass",
+  "category": "LIFT_TICKET",
+  "description": "Full-day lift access for children.",
+  "price": 85.00,
+  "imageUrl": "https://example.com/child-pass.jpg",
+  "active": true
+}
+```
+
+`DELETE` returns `204 No Content` and sets `active=false`; it never physically
+deletes a product referenced by carts or historical bookings. The admin list
+includes inactive products, while public catalog endpoints continue to exclude
+them. A product with lesson sessions cannot change category.
+
+### Lesson-session management
+
+```http
+GET  /api/admin/lesson-sessions
+GET  /api/admin/lesson-sessions?productId=3
+POST /api/admin/lesson-sessions
+PUT  /api/admin/lesson-sessions/{id}
+```
+
+```json
+{
+  "productId": 3,
+  "date": "2026-08-25",
+  "startTime": "09:00",
+  "endTime": "11:00",
+  "capacity": 8,
+  "status": "ACTIVE"
+}
+```
+
+The product must have category `LESSON`, end time must follow start time, and a
+product cannot have duplicate date/start slots. Capacity cannot fall below
+`bookedCount`. Once a session has bookings, its product, date, times, and status
+cannot be destructively changed; increasing capacity remains allowed.
+
+Admin business validation errors return `400 INVALID_ADMIN_REQUEST`.

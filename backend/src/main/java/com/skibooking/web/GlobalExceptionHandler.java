@@ -21,6 +21,7 @@ import com.skibooking.exception.CartNotFoundException;
 import com.skibooking.exception.DuplicateEmailException;
 import com.skibooking.exception.EmptyCartException;
 import com.skibooking.exception.InvalidCatalogRequestException;
+import com.skibooking.exception.InvalidAdminRequestException;
 import com.skibooking.exception.InvalidCartItemException;
 import com.skibooking.exception.InvalidCredentialsException;
 import com.skibooking.exception.InvalidCheckoutException;
@@ -96,6 +97,13 @@ public class GlobalExceptionHandler {
             InvalidCatalogRequestException exception,
             HttpServletRequest request) {
         return response(HttpStatus.BAD_REQUEST, "INVALID_CATALOG_REQUEST", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidAdminRequestException.class)
+    ResponseEntity<ApiError> handleInvalidAdminRequest(
+            InvalidAdminRequestException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "INVALID_ADMIN_REQUEST", exception.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

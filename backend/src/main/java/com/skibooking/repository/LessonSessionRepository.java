@@ -22,6 +22,18 @@ public interface LessonSessionRepository extends JpaRepository<LessonSession, Lo
             LocalDate sessionDate,
             LocalTime startTime);
 
+    boolean existsByProductId(Long productId);
+
+    boolean existsByProductIdAndSessionDateAndStartTimeAndIdNot(
+            Long productId,
+            LocalDate sessionDate,
+            LocalTime startTime,
+            Long id);
+
+    List<LessonSession> findAllByOrderBySessionDateAscStartTimeAsc();
+
+    List<LessonSession> findByProductIdOrderBySessionDateAscStartTimeAsc(Long productId);
+
     List<LessonSession> findByProductIdAndSessionDateAndStatusOrderByStartTimeAsc(
             Long productId,
             LocalDate sessionDate,

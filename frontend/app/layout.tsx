@@ -1,15 +1,26 @@
 import type { Metadata } from "next";
+
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ski Booking Platform",
-  description: "Book resort access, lift tickets, lessons, and rentals.",
+  title: {
+    default: "Snow Alpine Resort | Plan Your Snow Adventure",
+    template: "%s | Snow Alpine Resort",
+  },
+  description: "Book resort entry, lift tickets, ski lessons and equipment rentals at Snow Alpine Resort.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" data-scroll-behavior="smooth">
+      <body>
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }

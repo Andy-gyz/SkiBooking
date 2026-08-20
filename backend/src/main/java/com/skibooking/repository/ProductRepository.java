@@ -13,6 +13,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByResortIdAndName(Long resortId, String name);
 
+    List<Product> findAllByOrderByNameAsc();
+
+    List<Product> findByCategoryOrderByNameAsc(ProductCategory category);
+
     List<Product> findByCategoryAndActiveTrueOrderByNameAsc(ProductCategory category);
 
     List<Product> findByResortIdAndCategoryAndActiveTrueOrderByNameAsc(
