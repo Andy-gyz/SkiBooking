@@ -44,6 +44,20 @@ set +a
 SPRING_PROFILES_ACTIVE=local ./mvnw spring-boot:run
 ```
 
+For Stripe sandbox payments, add your `sk_test_...` secret key and the local
+webhook secret to `.env`. Obtain the webhook secret in another terminal:
+
+```bash
+stripe login
+stripe listen \
+  --events payment_intent.processing,payment_intent.succeeded,payment_intent.payment_failed,payment_intent.canceled \
+  --forward-to localhost:8080/api/payments/webhook
+```
+
+Copy the printed `whsec_...` value into `STRIPE_WEBHOOK_SECRET`, then restart the
+backend so it reads the new environment value. The `STRIPE_PUBLISHABLE_KEY` is
+reserved for the future frontend; the backend never exposes the secret key.
+
 The `local` profile loads fictional development seed data. Omit the profile to
 run with the core schema only.
 
@@ -74,7 +88,7 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 5 adds one unified shopping cart for resort access, lift tickets,
-lessons, and rentals. Anonymous carts use unguessable access tokens, authenticated
-carts enforce user ownership, totals use backend product prices, and anonymous
-items survive registration or login through cart claiming and merging.
+Milestone 7 adds Stripe sandbox payments using one idempotent PaymentIntent per
+booking. Only signed Stripe webhooks or a server-side Stripe status lookup can
+confirm an order. Failed card attempts remain retryable, successful payments are
+idempotent, and cancelled PaymentIntents release reserved lesson capacity once.

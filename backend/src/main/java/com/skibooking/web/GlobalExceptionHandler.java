@@ -15,14 +15,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.skibooking.exception.AuthenticatedUserNotFoundException;
+import com.skibooking.exception.BookingNotFoundException;
 import com.skibooking.exception.CartItemNotFoundException;
 import com.skibooking.exception.CartNotFoundException;
 import com.skibooking.exception.DuplicateEmailException;
+import com.skibooking.exception.EmptyCartException;
 import com.skibooking.exception.InvalidCatalogRequestException;
 import com.skibooking.exception.InvalidCartItemException;
 import com.skibooking.exception.InvalidCredentialsException;
+import com.skibooking.exception.InvalidCheckoutException;
+import com.skibooking.exception.InvalidPaymentException;
+import com.skibooking.exception.InvalidStripeWebhookException;
 import com.skibooking.exception.InsufficientLessonCapacityException;
+import com.skibooking.exception.PaymentNotFoundException;
 import com.skibooking.exception.ResourceNotFoundException;
+import com.skibooking.exception.StripeServiceException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -139,6 +146,55 @@ public class GlobalExceptionHandler {
             InsufficientLessonCapacityException exception,
             HttpServletRequest request) {
         return response(HttpStatus.CONFLICT, "INSUFFICIENT_LESSON_CAPACITY", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(BookingNotFoundException.class)
+    ResponseEntity<ApiError> handleBookingNotFound(
+            BookingNotFoundException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.NOT_FOUND, "BOOKING_NOT_FOUND", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(EmptyCartException.class)
+    ResponseEntity<ApiError> handleEmptyCart(
+            EmptyCartException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "EMPTY_CART", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidCheckoutException.class)
+    ResponseEntity<ApiError> handleInvalidCheckout(
+            InvalidCheckoutException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "INVALID_CHECKOUT", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(PaymentNotFoundException.class)
+    ResponseEntity<ApiError> handlePaymentNotFound(
+            PaymentNotFoundException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.NOT_FOUND, "PAYMENT_NOT_FOUND", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidPaymentException.class)
+    ResponseEntity<ApiError> handleInvalidPayment(
+            InvalidPaymentException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, "INVALID_PAYMENT", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidStripeWebhookException.class)
+    ResponseEntity<ApiError> handleInvalidStripeWebhook(
+            InvalidStripeWebhookException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "INVALID_STRIPE_WEBHOOK", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(StripeServiceException.class)
+    ResponseEntity<ApiError> handleStripeService(
+            StripeServiceException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_GATEWAY, "STRIPE_UNAVAILABLE", exception.getMessage(), request);
     }
 
     private ResponseEntity<ApiError> response(

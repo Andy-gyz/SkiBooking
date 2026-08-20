@@ -74,9 +74,10 @@ token. The token is not server-side revoked in V1.
 ## Authorization
 
 - `/api/auth/me` and `/api/auth/logout` require authentication.
+- `/api/bookings/**` and `/api/my-bookings` require authentication.
 - `/api/admin/**` requires the JWT role `ADMIN`.
-- Product browsing and future anonymous-cart routes remain public until their
-  own route rules are introduced.
+- Product browsing and shopping-cart routes remain public; each cart operation
+  still applies its own JWT or capability-token ownership check.
 
 ## Errors
 
@@ -238,3 +239,156 @@ checked when the item is added or updated and will be checked again at checkout.
 Cart errors include `CART_NOT_FOUND`, `CART_ITEM_NOT_FOUND`,
 `INVALID_CART_ITEM`, and `INSUFFICIENT_LESSON_CAPACITY`. A missing or incorrect
 cart token deliberately returns the same `404 CART_NOT_FOUND` response.
+
+## Bookings
+
+All booking endpoints require a Bearer JWT. A customer can only check out their
+own active cart and read their own bookings.
+
+### Create from an active cart
+
+```http
+POST /api/bookings
+```
+
+```json
+{
+  "cartId": 12,
+  "firstName": "Andy",
+  "lastName": "Example",
+  "email": "andy@example.com",
+  "phone": "+61 400 000 000"
+}
+```
+
+A successful request returns `201 Created`. The backend revalidates every item,
+uses current product prices, creates immutable item snapshots, marks the cart
+`CHECKED_OUT`, and returns a `PENDING` booking:
+
+```json
+{
+  "bookingNumber": "SKI-20260820-12AB34CD56EF",
+  "status": "PENDING",
+  "currency": "AUD",
+  "totalAmount": 270.00,
+  "customerFirstName": "Andy",
+  "customerLastName": "Example",
+  "customerEmail": "andy@example.com",
+  "customerPhone": "+61 400 000 000",
+  "createdAt": "2026-08-20T00:00:00Z",
+  "items": [
+    {
+      "id": 31,
+      "productId": 2,
+      "lessonSessionId": null,
+      "productName": "Full Day Lift Pass",
+      "category": "LIFT_TICKET",
+      "quantity": 2,
+      "unitPrice": 135.00,
+      "subtotal": 270.00,
+      "bookingDate": "2026-08-25",
+      "vehicleRegistration": null,
+      "vehicleType": null,
+      "entryDate": null,
+      "exitDate": null,
+      "rentalStartDate": null,
+      "rentalEndDate": null,
+      "rentalSize": null,
+      "rentalBootSize": null
+    }
+  ]
+}
+```
+
+Lesson rows are locked during checkout and capacity is reserved in the same
+database transaction. Concurrent checkout cannot exceed the session capacity.
+Payment confirmation will move a booking from `PENDING` to `CONFIRMED` in the
+payment milestone; failed or expired payment capacity release belongs to that
+workflow.
+
+Checkout errors include `CART_NOT_FOUND`, `EMPTY_CART`, `INVALID_CHECKOUT`, and
+`INSUFFICIENT_LESSON_CAPACITY`.
+
+### Booking history and detail
+
+```http
+GET /api/my-bookings
+GET /api/bookings/{bookingNumber}
+```
+
+History is newest first and returns booking number, status, currency, total,
+total purchased quantity as `itemCount`, and creation time. Detail returns the
+full snapshot shape shown above. An unknown booking or a booking belonging to a
+different customer returns `404 BOOKING_NOT_FOUND`.
+
+## Payments
+
+Payment creation and confirmation require a Bearer JWT and enforce booking
+ownership. The webhook endpoint is public at the HTTP layer but accepts only a
+payload with a valid Stripe signature.
+
+### Create or resume payment
+
+```http
+POST /api/payments/create
+```
+
+```json
+{
+  "bookingNumber": "SKI-20260820-12AB34CD56EF"
+}
+```
+
+The response contains the Stripe client secret needed by Stripe.js:
+
+```json
+{
+  "bookingNumber": "SKI-20260820-12AB34CD56EF",
+  "bookingStatus": "PENDING",
+  "paymentIntentId": "pi_123",
+  "paymentStatus": "PENDING",
+  "amount": 270.00,
+  "currency": "AUD",
+  "clientSecret": "pi_123_secret_..."
+}
+```
+
+The backend converts the trusted booking total to AUD cents and uses the booking
+number as a Stripe idempotency key. Repeating the request reuses the existing
+PaymentIntent instead of creating another charge attempt. Only the authenticated
+booking owner receives its client secret.
+
+### Reconcile payment status
+
+```http
+POST /api/payments/confirm
+```
+
+The request uses the same `bookingNumber` body. This endpoint does not trust a
+status supplied by the browser; it retrieves the PaymentIntent from Stripe and
+updates the local payment and booking from that result. The response uses the
+shape above but omits `clientSecret`.
+
+### Stripe webhook
+
+```http
+POST /api/payments/webhook
+Stripe-Signature: <stripe-signature>
+```
+
+The endpoint verifies the signature against the unmodified request body and
+handles:
+
+- `payment_intent.processing`
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+- `payment_intent.canceled`
+
+A successful event changes the payment to `SUCCEEDED` and booking to
+`CONFIRMED`. A failed payment attempt changes only the payment to `FAILED`; the
+booking remains `PENDING` so the customer can retry with another card. A
+definitively cancelled PaymentIntent changes the booking to `CANCELLED` and
+releases its lesson capacity exactly once. Duplicate webhook delivery is safe.
+
+Payment errors include `PAYMENT_NOT_FOUND`, `INVALID_PAYMENT`,
+`INVALID_STRIPE_WEBHOOK`, and `STRIPE_UNAVAILABLE`.
