@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { CategoryIcon } from "@/components/category-icon";
 import { ArrowIcon } from "@/components/icons";
 import { categories, findCategory } from "@/lib/categories";
 import { getProducts, type Product } from "@/lib/catalog";
@@ -22,14 +22,14 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return { title: category.navTitle, description: category.description };
 }
 
-function ProductCard({ product, priceSuffix }: { product: Product; priceSuffix: string }) {
+function ProductCard({ product, priceSuffix, photo, photoAlt }: { product: Product; priceSuffix: string; photo: string; photoAlt: string }) {
   const price = new Intl.NumberFormat("en-AU", { style: "currency", currency: product.currency, minimumFractionDigits: 0 }).format(product.price);
 
   return (
     <article className="product-card">
       <div className="product-card__visual">
+        <Image src={photo} alt={photoAlt} fill sizes="(max-width: 720px) 100vw, 390px" />
         <span>{product.resort.name}</span>
-        <CategoryIcon category={product.category} />
       </div>
       <div className="product-card__body">
         <div className="product-card__location">{product.resort.location}</div>
@@ -67,7 +67,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <h1>{category.title}</h1>
             <p>{category.description}</p>
           </div>
-          <div className="catalog-hero__icon"><CategoryIcon category={category.category} /></div>
+          <div className="catalog-hero__icon"><Image src={category.photo} alt={category.photoAlt} fill priority sizes="180px" /></div>
         </div>
       </section>
 
@@ -82,7 +82,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           ) : products.length === 0 ? (
             <div className="catalog-state"><span>More snow days are coming</span><h2>No products are available just yet.</h2><p>Please check back soon for the latest season release.</p></div>
           ) : (
-            <div className="product-grid">{products.map((product) => <ProductCard product={product} priceSuffix={category.priceSuffix} key={product.id} />)}</div>
+            <div className="product-grid">{products.map((product) => <ProductCard product={product} priceSuffix={category.priceSuffix} photo={category.photo} photoAlt={category.photoAlt} key={product.id} />)}</div>
           )}
         </div>
       </section>

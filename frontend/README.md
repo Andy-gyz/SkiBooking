@@ -33,6 +33,14 @@ include loading, empty, and backend-unavailable states. Product configuration
 and transactional customer flows are intentionally reserved for later frontend
 milestones.
 
+## Visual direction
+
+The interface uses a product-led alpine design system: oversized high-contrast
+sans-serif type, generous white space, snow-white and near-black section
+transitions, pill controls, soft translucent booking surfaces, and vivid
+category-specific gradients. The visual language is inspired by premium travel
+software while remaining specific to the Snow Alpine booking experience.
+
 ## Quality checks
 
 ```bash
