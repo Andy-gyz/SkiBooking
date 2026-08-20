@@ -482,6 +482,7 @@ them. A product with lesson sessions cannot change category.
 GET  /api/admin/lesson-sessions
 GET  /api/admin/lesson-sessions?productId=3
 POST /api/admin/lesson-sessions
+POST /api/admin/lesson-sessions/generate
 PUT  /api/admin/lesson-sessions/{id}
 ```
 
@@ -500,5 +501,24 @@ The product must have category `LESSON`, end time must follow start time, and a
 product cannot have duplicate date/start slots. Capacity cannot fall below
 `bookedCount`. Once a session has bookings, its product, date, times, and status
 cannot be destructively changed; increasing capacity remains allowed.
+
+The bulk generator accepts a date range of up to 63 days, selected weekdays,
+and one or more daily time slots:
+
+```json
+{
+  "productId": 3,
+  "startDate": "2026-08-22",
+  "endDate": "2026-08-29",
+  "daysOfWeek": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+  "slots": [
+    { "startTime": "09:00", "endTime": "11:00", "capacity": 8 },
+    { "startTime": "13:00", "endTime": "15:00", "capacity": 8 }
+  ]
+}
+```
+
+It returns `createdCount`, `skippedCount`, and the newly created sessions.
+Matching product/date/start slots are counted as skipped and never overwritten.
 
 Admin business validation errors return `400 INVALID_ADMIN_REQUEST`.

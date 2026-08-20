@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -265,6 +267,30 @@ class AdminIntegrationTests {
                 .andExpect(jsonPath("$.code").value("INVALID_ADMIN_REQUEST"));
     }
 
+    @Test
+    void bulkLessonSessionGenerationCreatesSelectedDaysAndSkipsExistingSlots() throws Exception {
+        LocalDate monday = LocalDate.now().plusDays(30)
+                .with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+        String request = bulkSessionRequest(lesson.getId(), monday, monday.plusDays(2));
+
+        mockMvc.perform(post("/api/admin/lesson-sessions/generate")
+                        .header("Authorization", bearer(adminToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.createdCount").value(4))
+                .andExpect(jsonPath("$.skippedCount").value(0))
+                .andExpect(jsonPath("$.sessions.length()").value(4));
+
+        mockMvc.perform(post("/api/admin/lesson-sessions/generate")
+                        .header("Authorization", bearer(adminToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.createdCount").value(0))
+                .andExpect(jsonPath("$.skippedCount").value(4));
+    }
+
     private String productRequest(String name, String category, String price, boolean active) {
         return """
                 {
@@ -296,6 +322,21 @@ class AdminIntegrationTests {
                   "status": "%s"
                 }
                 """.formatted(productId, date, start, end, capacity, status);
+    }
+
+    private String bulkSessionRequest(long productId, LocalDate startDate, LocalDate endDate) {
+        return """
+                {
+                  "productId": %d,
+                  "startDate": "%s",
+                  "endDate": "%s",
+                  "daysOfWeek": ["MONDAY", "WEDNESDAY"],
+                  "slots": [
+                    { "startTime": "09:00", "endTime": "11:00", "capacity": 8 },
+                    { "startTime": "13:00", "endTime": "15:00", "capacity": 8 }
+                  ]
+                }
+                """.formatted(productId, startDate, endDate);
     }
 
     private Booking createBooking(String suffix, BookingStatus status) {

@@ -37,6 +37,9 @@ cp .env.example .env.local
 - `/checkout` — authenticated booking creation and Stripe test payment
 - `/booking-confirmation/[bookingNumber]` — server-verified payment receipt
 - `/bookings/[bookingNumber]` — protected customer booking detail
+- `/admin` — role-protected reservation operations dashboard
+- `/admin/reservations/[category]` — confirmed category reservation list
+- `/admin/bookings/[id]` — complete administrator booking and payment record
 
 Category pages are server-rendered from the public Spring Boot catalog API and
 include loading, empty, and backend-unavailable states. Each product category
@@ -84,6 +87,27 @@ including booking status, reference, date, item count, and total. Each row opens
 a protected detail route with immutable item snapshots, booking-specific dates
 and configuration, guest information, and the trusted total. Pending bookings
 can be handed back to checkout to resume their existing Stripe PaymentIntent.
+
+## Milestone 14 admin operations
+
+Administrators are routed to a dedicated Snow Alpine Operations dashboard after
+sign-in. Dashboard counts include only confirmed or completed purchased
+quantities. Each of the four booking categories opens a reservation table with
+guest snapshots, category-specific selections, totals, and payment state. An
+administrator can then open the internal booking record to inspect every item
+and Stripe payment attempt. Frontend role states improve navigation, while the
+Spring Security `ADMIN` requirement remains the authoritative access control.
+
+## Milestone 15 inventory management
+
+The administrator workspace now includes `/admin/products` for creating,
+editing, activating, and safely deactivating bookable products. Historical
+booking snapshots remain intact when a product is deactivated. The
+`/admin/lesson-sessions` route manages lesson dates, times, status, and total
+capacity, shows booked and available places, and prevents capacity from being
+reduced below the number of existing reservations. Its schedule generator can
+create up to 63 days in one action using selected weekdays and reusable daily
+time slots; existing matching sessions are skipped without being overwritten.
 
 ## Visual direction
 

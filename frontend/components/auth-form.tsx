@@ -32,8 +32,8 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
   const switchHref = `${isRegister ? "/login" : "/register"}?next=${encodeURIComponent(destination)}`;
 
   useEffect(() => {
-    if (user) router.replace(destination);
-  }, [destination, router, user]);
+    if (user) router.replace(!nextPath && user.role === "ADMIN" ? "/admin" : destination);
+  }, [destination, nextPath, router, user]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -79,7 +79,11 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
           verificationCode: String(form.get("verificationCode") ?? ""),
           cartToken: anonymousCartToken ?? undefined,
         });
-      } else await login({ email, password, cartToken: anonymousCartToken ?? undefined });
+      } else {
+        const response = await login({ email, password, cartToken: anonymousCartToken ?? undefined });
+        router.replace(!nextPath && response.user.role === "ADMIN" ? "/admin" : destination);
+        return;
+      }
       router.replace(destination);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to continue. Please try again.");

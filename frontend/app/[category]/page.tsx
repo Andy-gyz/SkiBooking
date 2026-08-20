@@ -22,13 +22,14 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return { title: category.navTitle, description: category.description };
 }
 
-function ProductCard({ product, priceSuffix, photo, photoAlt }: { product: Product; priceSuffix: string; photo: string; photoAlt: string }) {
+function ProductCard({ product, priceSuffix, fallbackPhoto }: { product: Product; priceSuffix: string; fallbackPhoto: string }) {
   const price = new Intl.NumberFormat("en-AU", { style: "currency", currency: product.currency, minimumFractionDigits: 0 }).format(product.price);
+  const photo = product.imageUrl || fallbackPhoto;
 
   return (
     <article className="product-card">
       <div className="product-card__visual">
-        <Image src={photo} alt={photoAlt} fill sizes="(max-width: 720px) 100vw, 390px" />
+        <Image src={photo} alt={`${product.name} in a snowy mountain setting`} fill sizes="(max-width: 720px) 100vw, 390px" />
         <span>{product.resort.name}</span>
       </div>
       <div className="product-card__body">
@@ -82,7 +83,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           ) : products.length === 0 ? (
             <div className="catalog-state"><span>More snow days are coming</span><h2>No products are available just yet.</h2><p>Please check back soon for the latest season release.</p></div>
           ) : (
-            <div className="product-grid">{products.map((product) => <ProductCard product={product} priceSuffix={category.priceSuffix} photo={category.photo} photoAlt={category.photoAlt} key={product.id} />)}</div>
+            <div className="product-grid">{products.map((product) => <ProductCard product={product} priceSuffix={category.priceSuffix} fallbackPhoto={category.photo} key={product.id} />)}</div>
           )}
         </div>
       </section>

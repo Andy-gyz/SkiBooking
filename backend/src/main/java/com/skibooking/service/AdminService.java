@@ -1,15 +1,23 @@
 package com.skibooking.service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.skibooking.dto.admin.AdminBookingDetailResponse;
 import com.skibooking.dto.admin.AdminDashboardResponse;
+import com.skibooking.dto.admin.AdminLessonSessionBulkRequest;
+import com.skibooking.dto.admin.AdminLessonSessionBulkResponse;
 import com.skibooking.dto.admin.AdminLessonSessionRequest;
 import com.skibooking.dto.admin.AdminLessonSessionResponse;
+import com.skibooking.dto.admin.AdminLessonSessionSlotRequest;
 import com.skibooking.dto.admin.AdminPaymentResponse;
 import com.skibooking.dto.admin.AdminProductRequest;
 import com.skibooking.dto.admin.AdminProductResponse;
@@ -162,6 +170,44 @@ public class AdminService {
     }
 
     @Transactional
+    public AdminLessonSessionBulkResponse generateLessonSessions(
+            AdminLessonSessionBulkRequest request) {
+        Product product = findLessonProduct(request.productId());
+        validateBulkSessionRequest(request);
+
+        List<LessonSession> created = new ArrayList<>();
+        int skipped = 0;
+        for (LocalDate sessionDate = request.startDate();
+                !sessionDate.isAfter(request.endDate());
+                sessionDate = sessionDate.plusDays(1)) {
+            if (!request.daysOfWeek().contains(sessionDate.getDayOfWeek())) {
+                continue;
+            }
+            for (AdminLessonSessionSlotRequest slot : request.slots()) {
+                if (lessonSessionRepository.existsByProductIdAndSessionDateAndStartTime(
+                        product.getId(), sessionDate, slot.startTime())) {
+                    skipped++;
+                    continue;
+                }
+                LessonSession session = new LessonSession();
+                session.setProduct(product);
+                session.setSessionDate(sessionDate);
+                session.setStartTime(slot.startTime());
+                session.setEndTime(slot.endTime());
+                session.setCapacity(slot.capacity());
+                session.setBookedCount(0);
+                session.setStatus(LessonSessionStatus.ACTIVE);
+                created.add(session);
+            }
+        }
+
+        List<AdminLessonSessionResponse> responses = lessonSessionRepository.saveAll(created).stream()
+                .map(AdminLessonSessionResponse::from)
+                .toList();
+        return new AdminLessonSessionBulkResponse(responses.size(), skipped, responses);
+    }
+
+    @Transactional
     public AdminLessonSessionResponse updateLessonSession(
             Long id,
             AdminLessonSessionRequest request) {
@@ -221,6 +267,24 @@ public class AdminService {
     private void validateSessionRequest(AdminLessonSessionRequest request) {
         if (!request.endTime().isAfter(request.startTime())) {
             throw new InvalidAdminRequestException("Lesson end time must be after start time.");
+        }
+    }
+
+    private void validateBulkSessionRequest(AdminLessonSessionBulkRequest request) {
+        if (request.endDate().isBefore(request.startDate())) {
+            throw new InvalidAdminRequestException("The schedule end date cannot be before its start date.");
+        }
+        if (ChronoUnit.DAYS.between(request.startDate(), request.endDate()) > 62) {
+            throw new InvalidAdminRequestException("A schedule can cover at most 63 days at a time.");
+        }
+        Set<java.time.LocalTime> startTimes = new HashSet<>();
+        for (AdminLessonSessionSlotRequest slot : request.slots()) {
+            if (!slot.endTime().isAfter(slot.startTime())) {
+                throw new InvalidAdminRequestException("Every lesson end time must be after its start time.");
+            }
+            if (!startTimes.add(slot.startTime())) {
+                throw new InvalidAdminRequestException("Schedule time slots must have unique start times.");
+            }
         }
     }
 

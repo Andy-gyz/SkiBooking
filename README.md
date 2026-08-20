@@ -117,11 +117,15 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 13 completes the customer booking-history journey. The responsive
+Milestone 15 adds administrator inventory and lesson-capacity management. The responsive
 storefront now includes category-specific product configuration, a persistent
 anonymous cart, verified-email registration and login, secure anonymous-cart
 claiming, an account page, authenticated checkout, Stripe Payment Element,
 resumable pending payments, server-side payment reconciliation, and a booking
 confirmation receipt. Customers can now see every booking in their account,
 open its protected itinerary and guest details, and resume pending payment from
-the booking detail page.
+the booking detail page. Administrators receive a role-protected dashboard,
+confirmed reservation totals for all four categories, category-specific guest
+lists, full booking and Stripe payment records, product catalog controls, and
+lesson-session capacity management. Local development now starts with four
+products in each category and a rolling week of upcoming lesson sessions.

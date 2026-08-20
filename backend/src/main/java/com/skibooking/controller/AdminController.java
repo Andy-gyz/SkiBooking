@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skibooking.dto.admin.AdminBookingDetailResponse;
 import com.skibooking.dto.admin.AdminDashboardResponse;
+import com.skibooking.dto.admin.AdminLessonSessionBulkRequest;
+import com.skibooking.dto.admin.AdminLessonSessionBulkResponse;
 import com.skibooking.dto.admin.AdminLessonSessionRequest;
 import com.skibooking.dto.admin.AdminLessonSessionResponse;
 import com.skibooking.dto.admin.AdminProductRequest;
@@ -88,6 +90,13 @@ public class AdminController {
             @Valid @RequestBody AdminLessonSessionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(adminService.createLessonSession(request));
+    }
+
+    @PostMapping("/lesson-sessions/generate")
+    ResponseEntity<AdminLessonSessionBulkResponse> generateLessonSessions(
+            @Valid @RequestBody AdminLessonSessionBulkRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(adminService.generateLessonSessions(request));
     }
 
     @PutMapping("/lesson-sessions/{id}")
