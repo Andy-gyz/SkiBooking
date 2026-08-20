@@ -34,6 +34,15 @@ export type Booking = {
   items: BookingItem[];
 };
 
+export type BookingSummary = {
+  bookingNumber: string;
+  status: BookingStatus;
+  currency: string;
+  totalAmount: number;
+  itemCount: number;
+  createdAt: string;
+};
+
 export type CreateBookingInput = {
   cartId: number;
   firstName: string;
@@ -83,6 +92,10 @@ export function createBooking(input: CreateBookingInput, accessToken: string) {
 
 export function getBooking(bookingNumber: string, accessToken: string) {
   return authenticatedRequest<Booking>(`/api/bookings/${encodeURIComponent(bookingNumber)}`, accessToken);
+}
+
+export function getMyBookings(accessToken: string) {
+  return authenticatedRequest<BookingSummary[]>("/api/my-bookings", accessToken);
 }
 
 export function createPayment(bookingNumber: string, accessToken: string) {

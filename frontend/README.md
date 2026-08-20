@@ -33,9 +33,10 @@ cp .env.example .env.local
 - `/cart` — anonymous cart review and quantity management
 - `/login` — customer sign in with cart preservation
 - `/register` — customer account creation with cart preservation
-- `/account` — authenticated customer profile and checkout entry
+- `/account` — customer profile, active-cart action and booking history
 - `/checkout` — authenticated booking creation and Stripe test payment
 - `/booking-confirmation/[bookingNumber]` — server-verified payment receipt
+- `/bookings/[bookingNumber]` — protected customer booking detail
 
 Category pages are server-rendered from the public Spring Boot catalog API and
 include loading, empty, and backend-unavailable states. Each product category
@@ -75,6 +76,14 @@ the PaymentIntent and displays a confirmed booking receipt.
 The frontend process must receive `STRIPE_PUBLISHABLE_KEY` from the root `.env`
 file. Use Stripe test card `4242 4242 4242 4242`, any future expiry, and any
 three-digit CVC for a local successful-payment test.
+
+## Milestone 13 My Bookings
+
+The account page loads the signed-in customer's booking history newest first,
+including booking status, reference, date, item count, and total. Each row opens
+a protected detail route with immutable item snapshots, booking-specific dates
+and configuration, guest information, and the trusted total. Pending bookings
+can be handed back to checkout to resume their existing Stripe PaymentIntent.
 
 ## Visual direction
 

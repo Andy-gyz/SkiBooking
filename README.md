@@ -117,9 +117,11 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 12 completes the customer Stripe test-payment journey. The responsive
+Milestone 13 completes the customer booking-history journey. The responsive
 storefront now includes category-specific product configuration, a persistent
 anonymous cart, verified-email registration and login, secure anonymous-cart
 claiming, an account page, authenticated checkout, Stripe Payment Element,
 resumable pending payments, server-side payment reconciliation, and a booking
-confirmation receipt.
+confirmation receipt. Customers can now see every booking in their account,
+open its protected itinerary and guest details, and resume pending payment from
+the booking detail page.
