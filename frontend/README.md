@@ -8,6 +8,9 @@ TypeScript, and Tailwind CSS 4.
 Start the Spring Boot API on port `8080`, then run:
 
 ```bash
+set -a
+source ../.env
+set +a
 npm run dev
 ```
 
@@ -31,7 +34,8 @@ cp .env.example .env.local
 - `/login` — customer sign in with cart preservation
 - `/register` — customer account creation with cart preservation
 - `/account` — authenticated customer profile and checkout entry
-- `/checkout` — authentication-protected customer and booking review
+- `/checkout` — authenticated booking creation and Stripe test payment
+- `/booking-confirmation/[bookingNumber]` — server-verified payment receipt
 
 Category pages are server-rendered from the public Spring Boot catalog API and
 include loading, empty, and backend-unavailable states. Each product category
@@ -57,8 +61,20 @@ to the customer's Bearer JWT. Account and cart identity survive page reloads,
 and logout clears the local customer session.
 
 Checkout requires authentication and reviews customer details, selected items,
-and backend-confirmed totals. Stripe payment remains disabled until Milestone 12
-so this step does not create an unpaid booking prematurely.
+and backend-confirmed totals.
+
+## Milestone 12 payments
+
+Continuing from checkout creates a pending backend booking and an idempotent
+Stripe PaymentIntent, then renders Stripe Payment Element without passing raw
+card data through Snow Alpine. Pending booking numbers are retained locally so
+an interrupted payment resumes after a refresh instead of creating another
+order. After Stripe confirmation, the frontend asks the backend to reconcile
+the PaymentIntent and displays a confirmed booking receipt.
+
+The frontend process must receive `STRIPE_PUBLISHABLE_KEY` from the root `.env`
+file. Use Stripe test card `4242 4242 4242 4242`, any future expiry, and any
+three-digit CVC for a local successful-payment test.
 
 ## Visual direction
 

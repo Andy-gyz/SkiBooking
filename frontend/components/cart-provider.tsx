@@ -14,6 +14,7 @@ type CartContextValue = {
   changeQuantity: (item: CartItem, quantity: number) => Promise<Cart>;
   removeItem: (itemId: number) => Promise<void>;
   refresh: () => Promise<void>;
+  markCheckedOut: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -143,7 +144,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart(await getCart(identityRef.current, accessToken));
   }, [accessToken]);
 
-  return <CartContext.Provider value={{ cart, loading, error, anonymousCartToken: accessToken ? null : anonymousCartToken, addItem, changeQuantity, removeItem, refresh }}>{children}</CartContext.Provider>;
+  const markCheckedOut = useCallback(() => {
+    identityRef.current = null;
+    setCart(null);
+    updateCartId(null);
+  }, [updateCartId]);
+
+  return <CartContext.Provider value={{ cart, loading, error, anonymousCartToken: accessToken ? null : anonymousCartToken, addItem, changeQuantity, removeItem, refresh, markCheckedOut }}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

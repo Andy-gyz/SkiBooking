@@ -382,6 +382,7 @@ svg { display: block; }
 .checkout-content, .account-content { padding: 75px 0 110px; }
 .checkout-layout { display: grid; grid-template-columns: minmax(0, 1fr) 345px; align-items: start; gap: 55px; }
 .checkout-main { display: grid; gap: 20px; }
+.checkout-booking-form { display: contents; }
 .checkout-section-heading { margin-top: 22px; display: flex; align-items: flex-start; gap: 15px; }
 .checkout-section-heading:first-child { margin-top: 0; }
 .checkout-section-heading > span { width: 31px; height: 31px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: #e5e9ff; color: #354bd1; font-size: 10px; font-weight: 820; }
@@ -412,6 +413,12 @@ svg { display: block; }
 .checkout-summary .button:disabled { opacity: .75; }
 .checkout-summary > small { color: #7f849c; font-size: 9px; line-height: 1.55; text-align: center; }
 .checkout-summary > a { color: #b9bed4; font-size: 10px; font-weight: 700; text-align: center; }
+.checkout-payment-card { padding: 30px; }
+.stripe-payment-form { display: grid; gap: 22px; }
+.stripe-payment-form > .button { width: 100%; min-height: 54px; border: 0; }
+.stripe-payment-form > small { color: #858992; font-size: 9px; line-height: 1.55; text-align: center; }
+.checkout-error { margin: 0; padding: 13px 15px; border: 1px solid #f1c4c4; border-radius: 12px; background: #fff1f1; color: #a43636; font-size: 11px; line-height: 1.5; }
+.checkout-error--layout { grid-column: 1 / -1; }
 .checkout-loading { min-height: 680px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: #72767f; }
 .checkout-loading span { width: 42px; height: 42px; border: 3px solid #dde1e8; border-top-color: var(--blue); border-radius: 50%; animation: checkout-spin .8s linear infinite; }
 .checkout-loading p { margin: 0; font-size: 12px; }
@@ -428,6 +435,38 @@ svg { display: block; }
 .account-actions-card > a:last-child { margin-top: 16px; color: #aab0c8; font-size: 10px; font-weight: 700; }
 .account-logout { grid-column: 1 / -1; width: fit-content; padding: 0; border: 0; background: transparent; color: #8b5050; font: inherit; font-size: 11px; font-weight: 720; text-decoration: underline; cursor: pointer; }
 .account-loading { min-height: 680px; display: grid; place-items: center; color: var(--muted); }
+
+.confirmation-page { min-height: 72vh; background: #f4f5f7; }
+.confirmation-hero { padding: 90px 0 100px; background: #11142f; color: white; text-align: center; }
+.confirmation-hero__inner { max-width: 900px; display: flex; flex-direction: column; align-items: center; }
+.confirmation-mark { width: 72px; height: 72px; margin-bottom: 28px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.18); border-radius: 24px; background: rgba(255,255,255,.08); color: white; }
+.confirmation-mark.is-confirmed { background: #d9f7ce; color: #236733; box-shadow: 0 14px 45px rgba(84,211,112,.18); }
+.confirmation-mark svg { width: 31px; height: 31px; }
+.confirmation-hero .eyebrow { color: #93a3ff; }
+.confirmation-hero h1 { max-width: 850px; margin: 0; font-size: clamp(55px, 7vw, 84px); line-height: .98; letter-spacing: -.065em; }
+.confirmation-hero__inner > p:last-child { max-width: 610px; margin: 25px 0 0; color: #aeb4ca; font-size: 16px; line-height: 1.7; }
+.confirmation-content { padding: 75px 0 110px; }
+.confirmation-layout { max-width: 820px; display: grid; gap: 24px; }
+.confirmation-booking { padding: 27px 31px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 7px 25px; border: 1px solid #dfe2e8; border-radius: 23px; background: white; }
+.confirmation-booking span { color: var(--blue); font-size: 9px; font-weight: 820; letter-spacing: .1em; text-transform: uppercase; }
+.confirmation-booking strong { grid-row: 1 / 3; grid-column: 2; font-size: 17px; letter-spacing: -.02em; }
+.confirmation-booking small { color: #888b92; font-size: 10px; }
+.confirmation-receipt { padding: 12px 31px 28px; border: 1px solid #dfe2e8; border-radius: 28px; background: white; box-shadow: 0 12px 38px rgba(20,26,39,.06); }
+.confirmation-receipt__head { padding: 24px 0 27px; display: flex; align-items: end; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.confirmation-receipt__head span { color: var(--blue); font-size: 8px; font-weight: 820; letter-spacing: .11em; text-transform: uppercase; }
+.confirmation-receipt__head h2 { margin: 6px 0 0; font-size: 28px; letter-spacing: -.045em; }
+.confirmation-receipt__head > b { padding: 8px 11px; border-radius: 999px; background: #e0f5d9; color: #2e773d; font-size: 8px; letter-spacing: .08em; }
+.confirmation-item { padding: 21px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.confirmation-item > span { display: grid; gap: 4px; }
+.confirmation-item small { color: var(--blue); font-size: 8px; font-weight: 820; letter-spacing: .09em; text-transform: uppercase; }
+.confirmation-item strong { font-size: 14px; }
+.confirmation-item em { color: #888b92; font-size: 10px; font-style: normal; }
+.confirmation-item > b { font-size: 15px; }
+.confirmation-total { padding-top: 27px; display: flex; align-items: end; justify-content: space-between; }
+.confirmation-total span { color: #747880; font-size: 11px; font-weight: 700; }
+.confirmation-total strong { font-size: 25px; letter-spacing: -.04em; }
+.confirmation-actions { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.confirmation-actions > a:last-child { color: #6e7279; font-size: 11px; font-weight: 720; }
 
 @keyframes checkout-spin { to { transform: rotate(360deg); } }
 .catalog-state { padding: 75px 30px; border: 1px solid rgba(255,255,255,.12); border-radius: 28px; background: #14151a; text-align: center; }
@@ -566,6 +605,12 @@ svg { display: block; }
   .account-grid { grid-template-columns: 1fr; }
   .account-card, .account-actions-card { min-height: 270px; padding: 30px; }
   .account-logout { grid-column: auto; }
+  .confirmation-hero { padding: 72px 0 82px; }
+  .confirmation-hero h1 { font-size: clamp(49px, 13vw, 65px); }
+  .confirmation-content { padding: 55px 0 85px; }
+  .confirmation-booking { grid-template-columns: 1fr; }
+  .confirmation-booking strong { grid-row: auto; grid-column: auto; overflow-wrap: anywhere; }
+  .confirmation-actions { flex-direction: column; }
   .footer-grid { grid-template-columns: 1fr; gap: 38px; }
   .footer-bottom { gap: 15px; flex-direction: column; }
 }

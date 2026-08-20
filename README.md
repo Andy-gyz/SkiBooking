@@ -55,8 +55,9 @@ stripe listen \
 ```
 
 Copy the printed `whsec_...` value into `STRIPE_WEBHOOK_SECRET`, then restart the
-backend so it reads the new environment value. The `STRIPE_PUBLISHABLE_KEY` is
-reserved for the future frontend; the backend never exposes the secret key.
+backend so it reads the new environment value. The frontend embeds only the
+safe `STRIPE_PUBLISHABLE_KEY`; the backend secret key is never exposed to the
+browser.
 
 Customer registration sends six-digit verification codes through Resend. Set
 `RESEND_API_KEY` and quote `EMAIL_FROM` in `.env`. Without a verified custom
@@ -76,6 +77,9 @@ Run the frontend in another terminal:
 
 ```bash
 cd frontend
+set -a
+source ../.env
+set +a
 npm run dev
 ```
 
@@ -113,8 +117,9 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 11 completes the customer authentication handoff. The responsive
+Milestone 12 completes the customer Stripe test-payment journey. The responsive
 storefront now includes category-specific product configuration, a persistent
 anonymous cart, verified-email registration and login, secure anonymous-cart
-claiming, an account page, and an authentication-protected checkout review.
-Stripe payment submission is the next customer-facing frontend slice.
+claiming, an account page, authenticated checkout, Stripe Payment Element,
+resumable pending payments, server-side payment reconciliation, and a booking
+confirmation receipt.
