@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ArrowIcon } from "@/components/icons";
+import { ProductConfigurator } from "@/components/product-configurator";
 import { categories, findCategory } from "@/lib/categories";
 import { getProducts, type Product } from "@/lib/catalog";
 
@@ -37,7 +37,7 @@ function ProductCard({ product, priceSuffix, photo, photoAlt }: { product: Produ
         <p>{product.description}</p>
         <div className="product-card__footer">
           <div className="price"><span>From</span><strong>{price}</strong><small>{priceSuffix}</small></div>
-          <span className="button button--ink button--disabled" aria-label="Product configuration will be added in the next milestone">Select options <ArrowIcon /></span>
+          <ProductConfigurator product={product} />
         </div>
       </div>
     </article>
