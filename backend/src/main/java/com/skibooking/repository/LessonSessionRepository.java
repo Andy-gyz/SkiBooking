@@ -1,6 +1,7 @@
 package com.skibooking.repository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,11 @@ import jakarta.persistence.LockModeType;
 
 public interface LessonSessionRepository extends JpaRepository<LessonSession, Long> {
 
+    boolean existsByProductIdAndSessionDateAndStartTime(
+            Long productId,
+            LocalDate sessionDate,
+            LocalTime startTime);
+
     List<LessonSession> findByProductIdAndSessionDateAndStatusOrderByStartTimeAsc(
             Long productId,
             LocalDate sessionDate,
@@ -25,4 +31,3 @@ public interface LessonSessionRepository extends JpaRepository<LessonSession, Lo
     @Query("select session from LessonSession session where session.id = :id")
     Optional<LessonSession> findByIdForUpdate(@Param("id") Long id);
 }
-

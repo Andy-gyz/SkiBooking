@@ -28,7 +28,7 @@ public class JwtService {
         this.clock = Clock.systemUTC();
     }
 
-    public AuthResponse createAuthResponse(User user) {
+    public AuthResponse createAuthResponse(User user, Long cartId) {
         Instant issuedAt = clock.instant();
         Instant expiresAt = issuedAt.plus(properties.jwt().accessTokenTtl());
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -46,6 +46,7 @@ public class JwtService {
                 token,
                 "Bearer",
                 properties.jwt().accessTokenTtl().toSeconds(),
-                UserResponse.from(user));
+                UserResponse.from(user),
+                cartId);
     }
 }

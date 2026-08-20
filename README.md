@@ -74,6 +74,7 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 3 adds validated authentication DTOs, BCrypt password hashing, signed
-JWT access tokens, current-user lookup, and backend-enforced customer/admin role
-authorization. Product and cart APIs will be added in subsequent milestones.
+Milestone 5 adds one unified shopping cart for resort access, lift tickets,
+lessons, and rentals. Anonymous carts use unguessable access tokens, authenticated
+carts enforce user ownership, totals use backend product prices, and anonymous
+items survive registration or login through cart claiming and merging.

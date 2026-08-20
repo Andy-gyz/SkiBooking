@@ -4,5 +4,6 @@ public record AuthResponse(
         String accessToken,
         String tokenType,
         long expiresIn,
-        UserResponse user) {
+        UserResponse user,
+        Long cartId) {
 }

@@ -16,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.skibooking.entity.User;
+import com.skibooking.repository.CartItemRepository;
+import com.skibooking.repository.CartRepository;
 import com.skibooking.repository.UserRepository;
 
 import tools.jackson.databind.JsonNode;
@@ -35,8 +37,16 @@ class AuthIntegrationTests {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
     @BeforeEach
     void deleteUsers() {
+        cartItemRepository.deleteAll();
+        cartRepository.deleteAll();
         userRepository.deleteAll();
     }
 

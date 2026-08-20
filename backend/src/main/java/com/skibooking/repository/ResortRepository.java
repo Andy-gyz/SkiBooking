@@ -13,4 +13,6 @@ public interface ResortRepository extends JpaRepository<Resort, Long> {
     Optional<Resort> findByName(String name);
 
     List<Resort> findByStatusOrderByNameAsc(ResortStatus status);
+
+    Optional<Resort> findByIdAndStatus(Long id, ResortStatus status);
 }

@@ -35,5 +35,8 @@ public abstract class AuditableEntity extends AbstractEntity {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
-}
 
+    public void touch() {
+        updatedAt = Instant.now();
+    }
+}

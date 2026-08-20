@@ -25,14 +25,17 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final CartService cartService;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+            JwtService jwtService,
+            CartService cartService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.cartService = cartService;
     }
 
     @Transactional
@@ -55,17 +58,19 @@ public class AuthService {
         } catch (DataIntegrityViolationException exception) {
             throw new DuplicateEmailException();
         }
-        return jwtService.createAuthResponse(user);
+        Long cartId = cartService.attachAnonymousCart(request.cartToken(), user);
+        return jwtService.createAuthResponse(user, cartId);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmailIgnoreCase(normalizeEmail(request.email()))
                 .orElseThrow(InvalidCredentialsException::new);
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new InvalidCredentialsException();
         }
-        return jwtService.createAuthResponse(user);
+        Long cartId = cartService.attachAnonymousCart(request.cartToken(), user);
+        return jwtService.createAuthResponse(user, cartId);
     }
 
     @Transactional(readOnly = true)
