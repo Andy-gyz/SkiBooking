@@ -1,6 +1,8 @@
 package com.skibooking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,7 +21,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.skibooking.entity.User;
 import com.skibooking.repository.CartItemRepository;
 import com.skibooking.repository.CartRepository;
+import com.skibooking.repository.EmailVerificationCodeRepository;
 import com.skibooking.repository.UserRepository;
+import com.skibooking.service.VerificationCodeGenerator;
+import com.skibooking.service.VerificationEmailSender;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -43,11 +49,22 @@ class AuthIntegrationTests {
     @Autowired
     private CartRepository cartRepository;
 
+    @Autowired
+    private EmailVerificationCodeRepository verificationCodeRepository;
+
+    @MockitoBean
+    private VerificationCodeGenerator codeGenerator;
+
+    @MockitoBean
+    private VerificationEmailSender emailSender;
+
     @BeforeEach
     void deleteUsers() {
+        when(codeGenerator.generate()).thenReturn("123456");
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
         userRepository.deleteAll();
+        verificationCodeRepository.deleteAll();
     }
 
     @Test
@@ -107,7 +124,17 @@ class AuthIntegrationTests {
     void duplicateEmailReturnsConflict() throws Exception {
         register("customer@example.com").andExpect(status().isCreated());
 
-        register("CUSTOMER@example.com")
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "firstName": "Test",
+                                  "lastName": "Customer",
+                                  "email": "CUSTOMER@example.com",
+                                  "password": "Secret123!",
+                                  "verificationCode": "123456"
+                                }
+                                """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_EXISTS"))
                 .andExpect(jsonPath("$.path").value("/api/auth/register"));
@@ -128,7 +155,46 @@ class AuthIntegrationTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.fieldErrors").isArray())
-                .andExpect(jsonPath("$.fieldErrors.length()").value(3));
+                .andExpect(jsonPath("$.fieldErrors.length()").value(4));
+    }
+
+    @Test
+    void verificationCodeIsSentHashedAndRequiredForRegistration() throws Exception {
+        requestCode("verify@example.com")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expiresInSeconds").value(600))
+                .andExpect(jsonPath("$.resendAfterSeconds").value(60));
+
+        verify(emailSender).sendVerificationCode("verify@example.com", "123456");
+        assertThat(verificationCodeRepository.findByEmail("verify@example.com").orElseThrow().getCodeHash())
+                .isNotEqualTo("123456")
+                .startsWith("$2");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "firstName": "Test",
+                                  "lastName": "Customer",
+                                  "email": "verify@example.com",
+                                  "password": "Secret123!",
+                                  "verificationCode": "999999"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_VERIFICATION_CODE"));
+
+        registerWithoutRequest("verify@example.com")
+                .andExpect(status().isCreated());
+        assertThat(verificationCodeRepository.findByEmail("verify@example.com")).isEmpty();
+    }
+
+    @Test
+    void requestingAnotherCodeDuringCooldownIsRateLimited() throws Exception {
+        requestCode("cooldown@example.com").andExpect(status().isOk());
+        requestCode("cooldown@example.com")
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("VERIFICATION_CODE_COOLDOWN"));
     }
 
     @Test
@@ -167,6 +233,19 @@ class AuthIntegrationTests {
     }
 
     private org.springframework.test.web.servlet.ResultActions register(String email) throws Exception {
+        requestCode(email).andExpect(status().isOk());
+        return registerWithoutRequest(email);
+    }
+
+    private org.springframework.test.web.servlet.ResultActions requestCode(String email) throws Exception {
+        return mockMvc.perform(post("/api/auth/verification-codes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        { "email": "%s" }
+                        """.formatted(email)));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions registerWithoutRequest(String email) throws Exception {
         return mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -175,6 +254,7 @@ class AuthIntegrationTests {
                           "lastName": "Customer",
                           "email": "%s",
                           "password": "Secret123!",
+                          "verificationCode": "123456",
                           "phone": "+61 400 000 000"
                         }
                         """.formatted(email)));

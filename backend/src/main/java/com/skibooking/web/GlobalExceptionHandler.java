@@ -20,10 +20,12 @@ import com.skibooking.exception.CartItemNotFoundException;
 import com.skibooking.exception.CartNotFoundException;
 import com.skibooking.exception.DuplicateEmailException;
 import com.skibooking.exception.EmptyCartException;
+import com.skibooking.exception.EmailDeliveryException;
 import com.skibooking.exception.InvalidCatalogRequestException;
 import com.skibooking.exception.InvalidAdminRequestException;
 import com.skibooking.exception.InvalidCartItemException;
 import com.skibooking.exception.InvalidCredentialsException;
+import com.skibooking.exception.InvalidVerificationCodeException;
 import com.skibooking.exception.InvalidCheckoutException;
 import com.skibooking.exception.InvalidPaymentException;
 import com.skibooking.exception.InvalidStripeWebhookException;
@@ -31,6 +33,7 @@ import com.skibooking.exception.InsufficientLessonCapacityException;
 import com.skibooking.exception.PaymentNotFoundException;
 import com.skibooking.exception.ResourceNotFoundException;
 import com.skibooking.exception.StripeServiceException;
+import com.skibooking.exception.VerificationCodeCooldownException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -76,6 +79,27 @@ public class GlobalExceptionHandler {
             InvalidCredentialsException exception,
             HttpServletRequest request) {
         return response(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidVerificationCodeException.class)
+    ResponseEntity<ApiError> handleInvalidVerificationCode(
+            InvalidVerificationCodeException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "INVALID_VERIFICATION_CODE", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(VerificationCodeCooldownException.class)
+    ResponseEntity<ApiError> handleVerificationCodeCooldown(
+            VerificationCodeCooldownException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.TOO_MANY_REQUESTS, "VERIFICATION_CODE_COOLDOWN", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(EmailDeliveryException.class)
+    ResponseEntity<ApiError> handleEmailDelivery(
+            EmailDeliveryException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_GATEWAY, "EMAIL_DELIVERY_UNAVAILABLE", exception.getMessage(), request);
     }
 
     @ExceptionHandler(AuthenticatedUserNotFoundException.class)

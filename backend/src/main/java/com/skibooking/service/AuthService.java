@@ -17,6 +17,7 @@ import com.skibooking.entity.enums.UserRole;
 import com.skibooking.exception.AuthenticatedUserNotFoundException;
 import com.skibooking.exception.DuplicateEmailException;
 import com.skibooking.exception.InvalidCredentialsException;
+import com.skibooking.exception.InvalidVerificationCodeException;
 import com.skibooking.repository.UserRepository;
 
 @Service
@@ -26,16 +27,19 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CartService cartService;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            CartService cartService) {
+            CartService cartService,
+            EmailVerificationService emailVerificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.cartService = cartService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @Transactional
@@ -43,6 +47,13 @@ public class AuthService {
         String email = normalizeEmail(request.email());
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateEmailException();
+        }
+
+        switch (emailVerificationService.verify(email, request.verificationCode())) {
+            case INVALID -> throw new InvalidVerificationCodeException("The verification code is incorrect.");
+            case EXPIRED -> throw new InvalidVerificationCodeException("The verification code has expired. Request a new code.");
+            case TOO_MANY_ATTEMPTS -> throw new InvalidVerificationCodeException("Too many incorrect attempts. Request a new code.");
+            case VALID -> { }
         }
 
         User user = new User();
@@ -59,6 +70,7 @@ public class AuthService {
             throw new DuplicateEmailException();
         }
         Long cartId = cartService.attachAnonymousCart(request.cartToken(), user);
+        emailVerificationService.consume(email);
         return jwtService.createAuthResponse(user, cartId);
     }
 

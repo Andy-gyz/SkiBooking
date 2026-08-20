@@ -33,7 +33,7 @@ import com.skibooking.web.ApiAccessDeniedHandler;
 import com.skibooking.web.ApiAuthenticationEntryPoint;
 
 @Configuration
-@EnableConfigurationProperties({SecurityProperties.class, LocalAdminProperties.class})
+@EnableConfigurationProperties({SecurityProperties.class, LocalAdminProperties.class, EmailVerificationProperties.class})
 public class SecurityConfiguration {
 
     @Bean
@@ -49,7 +49,7 @@ public class SecurityConfiguration {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/verification-codes").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

@@ -1,6 +1,7 @@
 package com.skibooking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.skibooking.entity.LessonSession;
 import com.skibooking.entity.Product;
@@ -30,10 +32,13 @@ import com.skibooking.entity.enums.ProductCategory;
 import com.skibooking.entity.enums.ResortStatus;
 import com.skibooking.repository.CartItemRepository;
 import com.skibooking.repository.CartRepository;
+import com.skibooking.repository.EmailVerificationCodeRepository;
 import com.skibooking.repository.LessonSessionRepository;
 import com.skibooking.repository.ProductRepository;
 import com.skibooking.repository.ResortRepository;
 import com.skibooking.repository.UserRepository;
+import com.skibooking.service.VerificationCodeGenerator;
+import com.skibooking.service.VerificationEmailSender;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -69,6 +74,15 @@ class CartIntegrationTests {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailVerificationCodeRepository verificationCodeRepository;
+
+    @MockitoBean
+    private VerificationCodeGenerator codeGenerator;
+
+    @MockitoBean
+    private VerificationEmailSender emailSender;
+
     private Product resortAccessProduct;
     private Product liftProduct;
     private Product lessonProduct;
@@ -77,12 +91,14 @@ class CartIntegrationTests {
 
     @BeforeEach
     void setUp() {
+        when(codeGenerator.generate()).thenReturn("123456");
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
         lessonSessionRepository.deleteAll();
         productRepository.deleteAll();
         resortRepository.deleteAll();
         userRepository.deleteAll();
+        verificationCodeRepository.deleteAll();
 
         Resort resort = new Resort();
         resort.setName("Snow Alpine Resort");
@@ -370,6 +386,12 @@ class CartIntegrationTests {
 
     private org.springframework.test.web.servlet.ResultActions register(String email, String cartToken)
             throws Exception {
+        mockMvc.perform(post("/api/auth/verification-codes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "email": "%s" }
+                                """.formatted(email)))
+                .andExpect(status().isOk());
         String cartTokenJson = cartToken == null ? "null" : "\"" + cartToken + "\"";
         return mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -379,6 +401,7 @@ class CartIntegrationTests {
                           "lastName": "Customer",
                           "email": "%s",
                           "password": "Secret123!",
+                          "verificationCode": "123456",
                           "cartToken": %s
                         }
                         """.formatted(email, cartTokenJson)));

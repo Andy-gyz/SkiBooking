@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
+import { useAuth } from "@/components/auth-provider";
 import { useCart } from "@/components/cart-provider";
 import { ArrowIcon, CheckIcon, MountainIcon } from "@/components/icons";
 import { categories } from "@/lib/categories";
@@ -19,6 +20,7 @@ function itemDetails(item: CartItem) {
 }
 
 export function CartPage() {
+  const { user } = useAuth();
   const { cart, loading, error, changeQuantity, removeItem } = useCart();
   const [pendingId, setPendingId] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function CartPage() {
 
   return (
     <main className="cart-page">
-      <section className="cart-hero"><div className="shell"><p className="eyebrow">Anonymous cart · saved on this device</p><h1>Your snow day,<br />all together.</h1><p>{cart.itemCount} {cart.itemCount === 1 ? "reservation" : "reservations"} ready to review before checkout.</p></div></section>
+      <section className="cart-hero"><div className="shell"><p className="eyebrow">{user ? `Saved to ${user.firstName}'s account` : "Anonymous cart · saved on this device"}</p><h1>Your snow day,<br />all together.</h1><p>{cart.itemCount} {cart.itemCount === 1 ? "reservation" : "reservations"} ready to review before checkout.</p></div></section>
       <section className="cart-content"><div className="shell cart-layout">
         <div className="cart-list">
           <div className="cart-list__heading"><h2>Your selections</h2><Link href="/#plan">Add another item <ArrowIcon /></Link></div>
@@ -80,8 +82,8 @@ export function CartPage() {
           <div><span>Subtotal</span><strong>{money.format(cart.subtotal)}</strong></div>
           <div className="cart-summary__total"><span>Total</span><strong>{money.format(cart.total)} AUD</strong></div>
           <p><CheckIcon /> Prices are confirmed by the booking service.</p>
-          <button className="button button--ink" type="button" disabled>Checkout in Milestone 11 <ArrowIcon /></button>
-          <small>You&apos;ll sign in or create an account before payment. This anonymous cart will stay with you.</small>
+          <Link className="button button--ink" href="/checkout">Proceed to checkout <ArrowIcon /></Link>
+          <small>{user ? "Your cart is attached to your account." : "You'll sign in or create an account next. This anonymous cart will stay with you."}</small>
         </aside>
       </div></section>
     </main>

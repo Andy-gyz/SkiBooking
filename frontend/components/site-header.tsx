@@ -1,7 +1,8 @@
 import Link from "next/link";
 
+import { AccountStatusButton } from "@/components/account-status-button";
 import { CartStatusButton } from "@/components/cart-status-button";
-import { MountainIcon, UserIcon } from "@/components/icons";
+import { MountainIcon } from "@/components/icons";
 import { categories } from "@/lib/categories";
 
 export function SiteHeader() {
@@ -21,7 +22,7 @@ export function SiteHeader() {
             {categories.map((category) => <Link href={`/${category.slug}`} key={category.slug}>{category.navTitle}</Link>)}
           </nav>
           <div className="header-actions">
-            <span className="header-icon" aria-label="Account coming in a later milestone" title="Account coming soon"><UserIcon /></span>
+            <AccountStatusButton />
             <CartStatusButton />
             <details className="mobile-menu">
               <summary aria-label="Open navigation"><i /><i /><i /></summary>
@@ -29,6 +30,7 @@ export function SiteHeader() {
                 <Link href="/">Home</Link>
                 {categories.map((category) => <Link href={`/${category.slug}`} key={category.slug}>{category.navTitle}</Link>)}
                 <Link href="/cart">Cart</Link>
+                <Link href="/account">Account</Link>
               </nav>
             </details>
           </div>

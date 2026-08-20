@@ -28,6 +28,10 @@ cp .env.example .env.local
 - `/lessons` — active lesson products
 - `/rentals` — active rental products
 - `/cart` — anonymous cart review and quantity management
+- `/login` — customer sign in with cart preservation
+- `/register` — customer account creation with cart preservation
+- `/account` — authenticated customer profile and checkout entry
+- `/checkout` — authentication-protected customer and booking review
 
 Category pages are server-rendered from the public Spring Boot catalog API and
 include loading, empty, and backend-unavailable states. Each product category
@@ -41,8 +45,20 @@ add creates an anonymous backend cart; its cart ID and access token are stored
 in browser local storage so the cart survives navigation and page reloads.
 
 The cart page displays backend-confirmed prices and configuration details and
-supports quantity changes and item removal. Sign-in and checkout remain disabled
-until Milestone 11.
+supports quantity changes and item removal.
+
+## Milestone 11 authentication
+
+Registration first sends a six-digit, time-limited email code through Resend.
+After verification, registration and login pass the anonymous cart token to the backend, which
+claims or merges that cart into the authenticated customer's active cart. The
+frontend then switches all cart operations from the anonymous capability token
+to the customer's Bearer JWT. Account and cart identity survive page reloads,
+and logout clears the local customer session.
+
+Checkout requires authentication and reviews customer details, selected items,
+and backend-confirmed totals. Stripe payment remains disabled until Milestone 12
+so this step does not create an unpaid booking prematurely.
 
 ## Visual direction
 

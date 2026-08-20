@@ -58,6 +58,12 @@ Copy the printed `whsec_...` value into `STRIPE_WEBHOOK_SECRET`, then restart th
 backend so it reads the new environment value. The `STRIPE_PUBLISHABLE_KEY` is
 reserved for the future frontend; the backend never exposes the secret key.
 
+Customer registration sends six-digit verification codes through Resend. Set
+`RESEND_API_KEY` and quote `EMAIL_FROM` in `.env`. Without a verified custom
+domain, use `Snow Alpine <onboarding@resend.dev>` and register with the email
+address that owns the Resend account. Resend restricts this testing sender to
+that one recipient.
+
 To create a local-only administrator, set `LOCAL_ADMIN_EMAIL` and a private
 `LOCAL_ADMIN_PASSWORD` of at least eight characters in `.env`, then restart the
 backend with the `local` profile. The account is created only when both values
@@ -107,9 +113,8 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 9 replaces the default Next.js screen with the responsive Snow Alpine
-Resort customer experience. It includes the shared header and footer, branded
-home page, four public category routes, loading and unavailable states, and
-server-rendered catalog integration with the Spring Boot API. Product
-configuration, cart, authentication, checkout, and admin screens are the next
-frontend slices.
+Milestone 11 completes the customer authentication handoff. The responsive
+storefront now includes category-specific product configuration, a persistent
+anonymous cart, verified-email registration and login, secure anonymous-cart
+claiming, an account page, and an authentication-protected checkout review.
+Stripe payment submission is the next customer-facing frontend slice.

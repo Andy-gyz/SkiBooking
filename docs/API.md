@@ -10,6 +10,22 @@ Authorization: Bearer <accessToken>
 
 ### Register
 
+First request a six-digit email verification code:
+
+```http
+POST /api/auth/verification-codes
+```
+
+```json
+{
+  "email": "andy@example.com"
+}
+```
+
+Codes expire after 10 minutes, can be resent after 60 seconds, are stored only
+as password-style hashes, and allow at most five incorrect attempts. A repeated
+request during the cooldown returns `429 VERIFICATION_CODE_COOLDOWN`.
+
 `POST /api/auth/register` returns `201 Created`.
 
 ```json
@@ -18,13 +34,16 @@ Authorization: Bearer <accessToken>
   "lastName": "Example",
   "email": "andy@example.com",
   "password": "a-password-with-at-least-8-characters",
+  "verificationCode": "123456",
   "phone": "+61 400 000 000",
   "cartToken": "<optional-anonymous-cart-token>"
 }
 ```
 
 Email addresses are stored in lowercase. Registration always creates a
-`CUSTOMER`; clients cannot select their own role.
+`CUSTOMER`; clients cannot select their own role. Registration requires the
+latest valid verification code for that email. Invalid, expired, or exhausted
+codes return `400 INVALID_VERIFICATION_CODE`.
 
 ### Login
 

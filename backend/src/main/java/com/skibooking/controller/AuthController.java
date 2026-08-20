@@ -15,17 +15,27 @@ import org.springframework.web.bind.annotation.RestController;
 import com.skibooking.dto.auth.AuthResponse;
 import com.skibooking.dto.auth.LoginRequest;
 import com.skibooking.dto.auth.RegisterRequest;
+import com.skibooking.dto.auth.SendVerificationCodeRequest;
 import com.skibooking.dto.auth.UserResponse;
+import com.skibooking.dto.auth.VerificationCodeResponse;
 import com.skibooking.service.AuthService;
+import com.skibooking.service.EmailVerificationService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailVerificationService emailVerificationService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, EmailVerificationService emailVerificationService) {
         this.authService = authService;
+        this.emailVerificationService = emailVerificationService;
+    }
+
+    @PostMapping("/verification-codes")
+    VerificationCodeResponse sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+        return emailVerificationService.sendCode(request.email());
     }
 
     @PostMapping("/register")

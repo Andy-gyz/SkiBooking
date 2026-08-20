@@ -54,9 +54,9 @@ export type LessonSession = {
   status: "ACTIVE" | "CANCELLED";
 };
 
-export type CartIdentity = { id: number; token: string };
+export type CartIdentity = { id: number; token?: string };
 
-type CreateCartResponse = { cartToken: string; cart: Cart };
+type CreateCartResponse = { cartToken: string | null; cart: Cart };
 type ApiErrorBody = { message?: string; code?: string };
 
 export const CART_ID_KEY = "snow-alpine-cart-id";
@@ -75,31 +75,34 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-function tokenHeaders(token: string) {
-  return { "Content-Type": "application/json", "X-Cart-Token": token };
+function cartHeaders(identity?: CartIdentity, accessToken?: string | null) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  else if (identity?.token) headers["X-Cart-Token"] = identity.token;
+  return headers;
 }
 
-export async function createAnonymousCart(): Promise<{ identity: CartIdentity; cart: Cart }> {
-  const response = await apiRequest<CreateCartResponse>("/api/carts", { method: "POST" });
-  return { identity: { id: response.cart.id, token: response.cartToken }, cart: response.cart };
+export async function createCart(accessToken?: string | null): Promise<{ identity: CartIdentity; cart: Cart }> {
+  const response = await apiRequest<CreateCartResponse>("/api/carts", { method: "POST", headers: cartHeaders(undefined, accessToken) });
+  return { identity: { id: response.cart.id, token: response.cartToken ?? undefined }, cart: response.cart };
 }
 
-export function getCart(identity: CartIdentity) {
-  return apiRequest<Cart>(`/api/carts/${identity.id}`, { headers: tokenHeaders(identity.token) });
+export function getCart(identity: CartIdentity, accessToken?: string | null) {
+  return apiRequest<Cart>(`/api/carts/${identity.id}`, { headers: cartHeaders(identity, accessToken) });
 }
 
-export function addCartItem(identity: CartIdentity, request: CartItemRequest) {
-  return apiRequest<Cart>(`/api/carts/${identity.id}/items`, { method: "POST", headers: tokenHeaders(identity.token), body: JSON.stringify(request) });
+export function addCartItem(identity: CartIdentity, request: CartItemRequest, accessToken?: string | null) {
+  return apiRequest<Cart>(`/api/carts/${identity.id}/items`, { method: "POST", headers: cartHeaders(identity, accessToken), body: JSON.stringify(request) });
 }
 
-export function updateCartItem(identity: CartIdentity, itemId: number, request: CartItemRequest) {
+export function updateCartItem(identity: CartIdentity, itemId: number, request: CartItemRequest, accessToken?: string | null) {
   const { productId: _productId, ...updateRequest } = request;
   void _productId;
-  return apiRequest<Cart>(`/api/carts/${identity.id}/items/${itemId}`, { method: "PUT", headers: tokenHeaders(identity.token), body: JSON.stringify(updateRequest) });
+  return apiRequest<Cart>(`/api/carts/${identity.id}/items/${itemId}`, { method: "PUT", headers: cartHeaders(identity, accessToken), body: JSON.stringify(updateRequest) });
 }
 
-export function deleteCartItem(identity: CartIdentity, itemId: number) {
-  return apiRequest<void>(`/api/carts/${identity.id}/items/${itemId}`, { method: "DELETE", headers: tokenHeaders(identity.token) });
+export function deleteCartItem(identity: CartIdentity, itemId: number, accessToken?: string | null) {
+  return apiRequest<void>(`/api/carts/${identity.id}/items/${itemId}`, { method: "DELETE", headers: cartHeaders(identity, accessToken) });
 }
 
 export function getLessonSessions(productId: number, date: string) {
