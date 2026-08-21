@@ -2,6 +2,8 @@ package com.skibooking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.reset;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,6 +50,7 @@ import com.skibooking.repository.ProductRepository;
 import com.skibooking.repository.ResortRepository;
 import com.skibooking.repository.UserRepository;
 import com.skibooking.service.JwtService;
+import com.skibooking.service.BookingConfirmationEmailSender;
 import com.skibooking.service.StripePaymentGateway;
 import com.skibooking.service.StripePaymentIntent;
 import com.skibooking.service.StripeWebhookEvent;
@@ -96,6 +99,9 @@ class PaymentIntegrationTests {
     @MockitoBean
     private StripePaymentGateway stripePaymentGateway;
 
+    @MockitoBean
+    private BookingConfirmationEmailSender bookingConfirmationEmailSender;
+
     private User owner;
     private String ownerToken;
     private Booking booking;
@@ -104,7 +110,7 @@ class PaymentIntegrationTests {
     @BeforeEach
     void setUp() {
         clearDatabase();
-        reset(stripePaymentGateway);
+        reset(stripePaymentGateway, bookingConfirmationEmailSender);
 
         owner = createUser("owner@example.com");
         ownerToken = jwtService.createAuthResponse(owner, null).accessToken();
@@ -163,12 +169,14 @@ class PaymentIntegrationTests {
 
         Booking confirmed = bookingRepository.findById(booking.getId()).orElseThrow();
         assertThat(confirmed.getStatus()).isEqualTo(BookingStatus.CONFIRMED);
+        assertThat(confirmed.getConfirmationEmailSentAt()).isNotNull();
         assertThat(paymentRepository.findByStripePaymentId("pi_test_123").orElseThrow().getStatus())
                 .isEqualTo(PaymentStatus.SUCCEEDED);
         assertThat(paymentRepository.findByStripePaymentId("pi_test_123").orElseThrow().getPaidAt())
                 .isNotNull();
         assertThat(lessonSessionRepository.findById(lessonSession.getId()).orElseThrow().getBookedCount())
                 .isEqualTo(2);
+        verify(bookingConfirmationEmailSender, times(1)).sendConfirmation(any(), anyList());
     }
 
     @Test

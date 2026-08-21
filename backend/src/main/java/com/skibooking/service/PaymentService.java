@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,18 +42,21 @@ public class PaymentService {
     private final LessonSessionRepository lessonSessionRepository;
     private final PaymentRepository paymentRepository;
     private final StripePaymentGateway stripePaymentGateway;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PaymentService(
             BookingRepository bookingRepository,
             BookingItemRepository bookingItemRepository,
             LessonSessionRepository lessonSessionRepository,
             PaymentRepository paymentRepository,
-            StripePaymentGateway stripePaymentGateway) {
+            StripePaymentGateway stripePaymentGateway,
+            ApplicationEventPublisher eventPublisher) {
         this.bookingRepository = bookingRepository;
         this.bookingItemRepository = bookingItemRepository;
         this.lessonSessionRepository = lessonSessionRepository;
         this.paymentRepository = paymentRepository;
         this.stripePaymentGateway = stripePaymentGateway;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -172,6 +176,9 @@ public class PaymentService {
         }
         if (booking.getStatus() == BookingStatus.PENDING) {
             booking.setStatus(BookingStatus.CONFIRMED);
+        }
+        if (booking.getConfirmationEmailSentAt() == null) {
+            eventPublisher.publishEvent(new BookingConfirmedEvent(booking.getId()));
         }
     }
 

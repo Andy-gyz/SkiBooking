@@ -1,6 +1,7 @@
 package com.skibooking.entity;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import com.skibooking.entity.enums.BookingStatus;
 
@@ -45,6 +46,9 @@ public class Booking extends AuditableEntity {
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
+
+    @Column(name = "confirmation_email_sent_at")
+    private Instant confirmationEmailSentAt;
 
     public String getBookingNumber() {
         return bookingNumber;
@@ -117,5 +121,12 @@ public class Booking extends AuditableEntity {
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
-}
 
+    public Instant getConfirmationEmailSentAt() {
+        return confirmationEmailSentAt;
+    }
+
+    public void setConfirmationEmailSentAt(Instant confirmationEmailSentAt) {
+        this.confirmationEmailSentAt = confirmationEmailSentAt;
+    }
+}
