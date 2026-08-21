@@ -76,7 +76,7 @@ an interrupted payment resumes after a refresh instead of creating another
 order. After Stripe confirmation, the frontend asks the backend to reconcile
 the PaymentIntent and displays a confirmed booking receipt.
 
-The frontend process must receive `STRIPE_PUBLISHABLE_KEY` from the root `.env`
+The frontend process must receive `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` from the root `.env`
 file. Use Stripe test card `4242 4242 4242 4242`, any future expiry, and any
 three-digit CVC for a local successful-payment test.
 
@@ -108,6 +108,15 @@ capacity, shows booked and available places, and prevents capacity from being
 reduced below the number of existing reservations. Its schedule generator can
 create up to 63 days in one action using selected weekdays and reusable daily
 time slots; existing matching sessions are skipped without being overwritten.
+
+## Milestone 16 production readiness
+
+The customer app defaults to `https://snowalpineresort.com` and
+`https://api.snowalpineresort.com` in production, publishes canonical Open
+Graph metadata, a public-route sitemap and crawler exclusions for account,
+checkout, booking and administrator routes. Unexpected render failures use
+branded recoverable error screens, common security headers are added to every
+response, and standalone output supports a non-root production container.
 
 ## Visual direction
 

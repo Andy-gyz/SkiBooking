@@ -1,3 +1,5 @@
+import { serverApiBaseUrl } from "@/lib/api-config";
+
 export type ProductCategory = "RESORT_ACCESS" | "LIFT_TICKET" | "LESSON" | "RENTAL";
 
 export type ResortSummary = {
@@ -17,10 +19,8 @@ export type Product = {
   imageUrl: string | null;
 };
 
-const apiBaseUrl = process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
-
 export async function getProducts(category: ProductCategory): Promise<Product[]> {
-  const response = await fetch(`${apiBaseUrl}/api/products?category=${encodeURIComponent(category)}`, { cache: "no-store" });
+  const response = await fetch(`${serverApiBaseUrl}/api/products?category=${encodeURIComponent(category)}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`Catalog request failed with status ${response.status}`);
   return response.json() as Promise<Product[]>;
 }

@@ -56,7 +56,7 @@ stripe listen \
 
 Copy the printed `whsec_...` value into `STRIPE_WEBHOOK_SECRET`, then restart the
 backend so it reads the new environment value. The frontend embeds only the
-safe `STRIPE_PUBLISHABLE_KEY`; the backend secret key is never exposed to the
+safe `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`; the backend secret key is never exposed to the
 browser.
 
 Customer registration sends six-digit verification codes through Resend. Set
@@ -117,7 +117,12 @@ The backend exposes stateless Bearer JWT authentication at `/api/auth`. See
 
 ## Current status
 
-Milestone 15 adds administrator inventory and lesson-capacity management. The responsive
+Milestone 16 adds production-readiness controls for `snowalpineresort.com`: a
+fail-fast Spring production profile, private-database health probes, repeatable
+initial catalog and administrator bootstrap, container builds, frontend error
+boundaries, canonical metadata, robots and sitemap output, security headers,
+GitHub CI, and a deployment runbook for Vercel, App Runner, RDS, Stripe and
+Resend. The responsive
 storefront now includes category-specific product configuration, a persistent
 anonymous cart, verified-email registration and login, secure anonymous-cart
 claiming, an account page, authenticated checkout, Stripe Payment Element,
@@ -129,3 +134,6 @@ confirmed reservation totals for all four categories, category-specific guest
 lists, full booking and Stripe payment records, product catalog controls, and
 lesson-session capacity management. Local development now starts with four
 products in each category and a rolling week of upcoming lesson sessions.
+
+See [`docs/deployment/README.md`](docs/deployment/README.md) for the production
+architecture, environment variables, DNS plan and launch gates.

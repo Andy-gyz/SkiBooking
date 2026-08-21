@@ -761,6 +761,7 @@ svg { display: block; }
 .not-found > span { color: var(--blue); font-size: 12px; font-weight: 850; letter-spacing: .17em; }
 .not-found h1 { max-width: 720px; margin: 15px 0; font-size: clamp(52px, 7vw, 78px); font-weight: 820; line-height: .98; letter-spacing: -.06em; }
 .not-found p { max-width: 550px; margin: 0 0 28px; color: var(--muted); line-height: 1.7; }
+.error-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
 .site-footer { padding: 75px 0 25px; background: var(--black); color: #a0a2a8; }
 .footer-grid { display: grid; grid-template-columns: 1.5fr .8fr 1fr; gap: 80px; }

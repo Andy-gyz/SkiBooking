@@ -1,5 +1,6 @@
 import type { BookingItem, BookingStatus, PaymentStatus } from "@/lib/booking";
 import type { ResortSummary } from "@/lib/catalog";
+import { publicApiBaseUrl } from "@/lib/api-config";
 
 export type AdminCategory = "RESORT_ACCESS" | "LIFT_TICKET" | "LESSON" | "RENTAL";
 
@@ -113,10 +114,9 @@ export type AdminLessonSessionBulkResult = {
 };
 
 type ApiErrorBody = { message?: string };
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
 async function adminRequest<T>(path: string, accessToken: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(`${publicApiBaseUrl}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, ...init?.headers },
   });
@@ -142,7 +142,7 @@ export function getAdminBooking(id: number, accessToken: string) {
 }
 
 export async function getResorts() {
-  const response = await fetch(`${apiBaseUrl}/api/resorts`);
+  const response = await fetch(`${publicApiBaseUrl}/api/resorts`);
   if (!response.ok) throw new Error("We could not load resorts.");
   return response.json() as Promise<Resort[]>;
 }

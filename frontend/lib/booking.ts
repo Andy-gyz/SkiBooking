@@ -1,3 +1,5 @@
+import { publicApiBaseUrl } from "@/lib/api-config";
+
 export type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED";
 export type PaymentStatus = "PENDING" | "SUCCEEDED" | "FAILED";
 
@@ -63,10 +65,8 @@ export type Payment = {
 
 type ApiErrorBody = { message?: string; fieldErrors?: Array<{ field: string; message: string }> };
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
-
 async function authenticatedRequest<T>(path: string, accessToken: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(`${publicApiBaseUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",

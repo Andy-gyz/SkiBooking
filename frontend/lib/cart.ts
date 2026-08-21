@@ -1,4 +1,5 @@
 import type { Product } from "@/lib/catalog";
+import { publicApiBaseUrl } from "@/lib/api-config";
 
 export type CartItemRequest = {
   productId: number;
@@ -62,10 +63,8 @@ type ApiErrorBody = { message?: string; code?: string };
 export const CART_ID_KEY = "snow-alpine-cart-id";
 export const CART_TOKEN_KEY = "snow-alpine-cart-token";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
-
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, init);
+  const response = await fetch(`${publicApiBaseUrl}${path}`, init);
   if (!response.ok) {
     let body: ApiErrorBody = {};
     try { body = await response.json() as ApiErrorBody; } catch { /* Use the status fallback. */ }
