@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Docker consumes Next.js' minimal standalone server. Vercel provides its
+  // own runtime output and must not be forced through the Docker packaging
+  // path during its build.
+  ...(process.env.VERCEL ? {} : { output: "standalone" as const }),
   env: {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
