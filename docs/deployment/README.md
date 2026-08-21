@@ -3,23 +3,24 @@
 Milestone 16 prepares the application for deployment without creating paid
 cloud resources. Milestone 17 will execute this runbook.
 
-## Target architecture
+## Portfolio target architecture
 
 ```text
 Customer browser
   ├─ snowalpineresort.com ──> Vercel / Next.js
-  └─ api.snowalpineresort.com ──> AWS App Runner / Spring Boot
-                                      ├─ private VPC ──> RDS PostgreSQL
-                                      └─ NAT gateway ──> Stripe + Resend
+  └─ api.snowalpineresort.com ──> Caddy HTTPS / Lightsail
+                                      ├─ Spring Boot container
+                                      └─ PostgreSQL container + persistent volume
 
 Stripe webhooks ──> api.snowalpineresort.com/api/payments/webhook
 Resend ──> verification email from bookings@mail.snowalpineresort.com
 ```
 
-App Runner needs a VPC connector to reach a private RDS instance. AWS routes
-all application egress through that VPC connector, so the selected private
-subnets also need outbound internet access through a NAT gateway for Stripe and
-Resend. See the official [App Runner VPC connector guide](https://docs.aws.amazon.com/apprunner/latest/dg/network-vpc.html).
+The portfolio deployment intentionally uses one 2 GB Lightsail instance to
+avoid the standing cost of App Runner, RDS, and a NAT gateway. PostgreSQL is
+not exposed to the internet; only Caddy publishes ports 80 and 443. This is a
+cost-conscious portfolio topology, not a high-availability commercial setup.
+The executable files live in [`deploy/lightsail`](../../deploy/lightsail/).
 
 ## Production domains
 
@@ -43,17 +44,17 @@ DNS, wait for `Verified`, and then use
 
 ## Backend production variables
 
-Store secret values in AWS Secrets Manager and reference them from App Runner.
-Plain App Runner environment variables are appropriate only for non-sensitive
-configuration.
+Store secret values only in the root-readable `deploy/lightsail/.env` file on
+the server. Never commit the production file; the repository contains only an
+example.
 
 | Variable | Production value or source |
 | --- | --- |
 | `SPRING_PROFILES_ACTIVE` | `production` |
-| `DB_URL` | RDS JDBC URL with SSL, e.g. `jdbc:postgresql://HOST:5432/skibooking?sslmode=require` |
-| `DB_USERNAME` | Secrets Manager |
-| `DB_PASSWORD` | Secrets Manager |
-| `JWT_SECRET` | At least 48 random bytes, Secrets Manager |
+| `DB_URL` | Internal Compose URL `jdbc:postgresql://postgres:5432/skibooking` |
+| `DB_USERNAME` | Server `.env` |
+| `DB_PASSWORD` | Server `.env` |
+| `JWT_SECRET` | At least 48 random bytes, server `.env` |
 | `JWT_ISSUER` | `snowalpine-api` |
 | `CORS_ALLOWED_ORIGINS` | `https://snowalpineresort.com,https://www.snowalpineresort.com` |
 | `STRIPE_SECRET_KEY` | Stripe test secret initially; live key only at launch |
@@ -105,7 +106,7 @@ payment_intent.payment_failed
 payment_intent.canceled
 ```
 
-Copy the endpoint's own `whsec_...` secret to AWS Secrets Manager. The local
+Copy the endpoint's own `whsec_...` secret to the server `.env`. The local
 Stripe CLI webhook secret cannot be reused in production.
 
 ## Deployment gates
@@ -113,8 +114,9 @@ Stripe CLI webhook secret cannot be reused in production.
 Before public launch, every item must pass:
 
 - GitHub CI passes backend tests, frontend lint and frontend production build.
-- App Runner reports `UP` from `/actuator/health/readiness`.
-- RDS is private, uses PostgreSQL 17, automated backups, and SSL connections.
+- All three Lightsail containers report healthy/running.
+- PostgreSQL 17 is reachable only on the private Compose network.
+- An encrypted PostgreSQL dump is stored outside the instance before updates.
 - `https://api.snowalpineresort.com/actuator/health` returns `UP` without details.
 - Browser CORS succeeds only from the customer domains.
 - Resend domain is verified and a real verification email arrives.
@@ -123,9 +125,8 @@ Before public launch, every item must pass:
 - Customer, payment and admin routes are excluded from `robots.txt`.
 - Both domains have valid HTTPS certificates.
 
-App Runner can perform an HTTP health check against
-`/actuator/health/readiness`; AWS documents the available thresholds in the
-[App Runner health-check guide](https://docs.aws.amazon.com/apprunner/latest/dg/manage-configure-healthcheck.html).
+Caddy automatically provisions and renews the API TLS certificate after the
+DNS A record resolves and ports 80 and 443 are reachable.
 
 ## Image hosting decision
 
